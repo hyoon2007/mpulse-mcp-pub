@@ -1,0 +1,1109 @@
+{
+  "_meta": {
+    "title": "mPulse Query API Reference Catalog",
+    "purpose": "Reference names and API behavior to reduce repeated discovery and avoidable query errors.",
+    "generated": "2026-08-04",
+    "generated_by": "Empirically verified vs live mpulse MCP (app=app-a) + Akamai TechDocs endpoint reference pages + Akamai cli-mpulse; bandwith-block spelling and custom-dimension usage confirmed by app owner.",
+    "docs_endpoint_pages": {
+      "timers-metrics": "https://techdocs.akamai.com/mpulse/reference/get-timers-metrics",
+      "metrics-by-dimension": "https://techdocs.akamai.com/mpulse/reference/get-metrics-by-dimension",
+      "dimension-values": "https://techdocs.akamai.com/mpulse/reference/get-dimension-values"
+    },
+    "custom_metric_source": "App-specific CUSTOM metrics/timers are not in these enums. Get them from Repository/Objects API domain['custom_metrics'] (github.com/akamai/mPulseAPI.jl) or the dashboard report-builder.",
+    "confidence_legend": {
+      "verified_docs": "From the Akamai endpoint reference enum lists.",
+      "verified_live": "Confirmed against the live API in this environment.",
+      "verified_cli": "From Akamai cli-mpulse argparse choices."
+    },
+    "maintenance": {
+      "mode": "Manually maintained static reference; no automatic synchronization with the upstream API.",
+      "sources": "Akamai TechDocs, cli-mpulse choices, and recorded live API checks. Keep source/verification dates when updating entries.",
+      "descriptions_reviewed": "2026-11-15",
+      "review_scope": "Descriptions reconciled with the local implementation; this is not a new live verification of all API claims.",
+      "update_process": "Review API changes, verify affected behavior, edit this JSON and regression tests (and Python code when behavior changes), deploy, then restart the MCP server.",
+      "runtime": "Query metadata is loaded and cached per process. The packaged catalog is required; missing or invalid metadata raises a clear configuration error during import/startup. Deploy edits and restart the server. describe_query selects reference content; textual constraints are not all executable validation rules.",
+      "metadata_source": "endpoint_params is the canonical query metadata registry; query_types.py loads typed Python views without a second hard-coded API table."
+    }
+  },
+  "apps": {
+    "confidence": "verified_live",
+    "default_app": "app-a",
+    "list": [
+      {
+        "name": "app-a",
+        "tenant": "your-tenant"
+      },
+      {
+        "name": "app-b",
+        "tenant": "your-tenant"
+      }
+    ]
+  },
+  "CRITICAL_same_metric_different_name_per_endpoint": {
+    "confidence": "verified_docs+verified_live",
+    "note": "A physical metric is named ONE way for timers-metrics (CamelCase) and a DIFFERENT way for metrics-by-dimension (snake_case). Do NOT convert mechanically: only ~23% of names survive a CamelCase->snake_case rewrite (verified 2026-11-02 against both enums). Traps: Img->image_, Bcn->beacon_, Total*->asset_*, Avg* prefix dropped, *CompressionRatio->*_compression_rate. Pick the name from the endpoint's own valid_metrics enum.",
+    "mapping": [
+      {
+        "concept": "Requests per page (all assets)",
+        "timers_metrics": "TotalRequestCount",
+        "metrics_by_dimension": "asset_requests_per_page",
+        "unit": "count"
+      },
+      {
+        "concept": "Decoded (uncompressed) body size, all assets",
+        "timers_metrics": "TotalDecodedBodySize",
+        "metrics_by_dimension": "asset_decoded_body_size",
+        "unit": "bytes"
+      },
+      {
+        "concept": "Transfer (over-the-wire) size, all assets",
+        "timers_metrics": "TotalTransferSize",
+        "metrics_by_dimension": "asset_transfer_size",
+        "unit": "bytes"
+      },
+      {
+        "concept": "Image transfer (over-the-wire) size",
+        "timers_metrics": "ImgTransferSize",
+        "metrics_by_dimension": "image_transfer_size",
+        "unit": "bytes",
+        "confidence": "verified_live 2026-11-02 (mbd response column echoes 'ImgTransferSize')"
+      }
+    ],
+    "note_TotalRequestCount": "TotalRequestCount is NOT in the timers-metrics docs enum (its Total* group lists 8 items, matching the doc's '97' count) yet it RETURNS a valid series in the live API (verified: returns a valid series). Treat as working-but-undocumented. Per-content-type counts (PageRequestCount, JsRequestCount, ImgRequestCount, ...) ARE documented."
+  },
+  "query_types": {
+    "confidence": "verified_docs+verified_live",
+    "one_calendar_day_per_query_for_date_param": true,
+    "note": "Canonical query types and their metadata are defined once under endpoint_params; underscore-prefixed entries there are reference notes.",
+    "usage_constraints": "The date parameter selects one calendar day; Between selects a range with an exclusive end. Time-series resolution depends on the endpoint and period. Results depend on timezone; empty filtered results require interpretation."
+  },
+  "metrics_for_timers_metrics__metric_param": {
+    "confidence": "verified_docs (+ TotalRequestCount verified_live)",
+    "endpoint": "timers-metrics (also summary/histogram/by-minute use the `timer` param family, not this)",
+    "default": "Beacons",
+    "casing": "CamelCase",
+    "multiple": "The API accepts repeated metric= and timer= keys in the same query. get_metrics accepts a string or JSON list for metric and timer; query accepts JSON lists in params. The client expands lists to repeated query keys. get_aggregate groups requested metrics and timers into one timers-metrics query per unique period/percentile.",
+    "prefixes": "Bcn(beacon), Css, Font, Html, Img(image), Js, Other, Page, Total(all), Xhr. Suffixes: RequestCount, TransferSize, DecodedBodySize, CompressionRatio, ByteCompressionRatio, BrowserCacheHitRatio, CdnCacheHitRatio, CdnEdgeTime, OriginTime.",
+    "enum": [
+      "Beacons",
+      "AppErrors",
+      "AvgSessionDuration",
+      "AvgSessionLength",
+      "BcnBrowserCacheHitRatio",
+      "BcnByteCompressionRatio",
+      "BcnCdnCacheHitRatio",
+      "BcnCdnEdgeTime",
+      "BcnCompressionRatio",
+      "BcnDecodedBodySize",
+      "BcnOriginTime",
+      "BcnRequestCount",
+      "BcnTransferSize",
+      "BounceRate",
+      "CssBrowserCacheHitRatio",
+      "CssByteCompressionRatio",
+      "CssCdnCacheHitRatio",
+      "CssCdnEdgeTime",
+      "CssCompressionRatio",
+      "CssDecodedBodySize",
+      "CssOriginTime",
+      "CssRequestCount",
+      "CssTransferSize",
+      "CumulativeLayoutShift",
+      "ErrorsPerPage",
+      "FontBrowserCacheHitRatio",
+      "FontByteCompressionRatio",
+      "FontCdnCacheHitRatio",
+      "FontCdnEdgeTime",
+      "FontCompressionRatio",
+      "FontDecodedBodySize",
+      "FontOriginTime",
+      "FontRequestCount",
+      "FontTransferSize",
+      "HtmlBrowserCacheHitRatio",
+      "HtmlByteCompressionRatio",
+      "HtmlCdnCacheHitRatio",
+      "HtmlCdnEdgeTime",
+      "HtmlCompressionRatio",
+      "HtmlDecodedBodySize",
+      "HtmlOriginTime",
+      "HtmlRequestCount",
+      "HtmlTransferSize",
+      "ImgBrowserCacheHitRatio",
+      "ImgByteCompressionRatio",
+      "ImgCdnCacheHitRatio",
+      "ImgCdnEdgeTime",
+      "ImgCompressionRatio",
+      "ImgDecodedBodySize",
+      "ImgOriginTime",
+      "ImgRequestCount",
+      "ImgTransferSize",
+      "JsBrowserCacheHitRatio",
+      "JsByteCompressionRatio",
+      "JsCdnCacheHitRatio",
+      "JsCdnEdgeTime",
+      "JsCompressionRatio",
+      "JsDecodedBodySize",
+      "JsOriginTime",
+      "JsRequestCount",
+      "JsTransferSize",
+      "OtherBrowserCacheHitRatio",
+      "OtherByteCompressionRatio",
+      "OtherCdnCacheHitRatio",
+      "OtherCdnEdgeTime",
+      "OtherCompressionRatio",
+      "OtherDecodedBodySize",
+      "OtherOriginTime",
+      "OtherRequestCount",
+      "OtherTransferSize",
+      "PageBrowserCacheHitRatio",
+      "PageByteCompressionRatio",
+      "PageCdnCacheHitRatio",
+      "PageCdnEdgeTime",
+      "PageCompressionRatio",
+      "PageDecodedBodySize",
+      "PageOriginTime",
+      "PageRequestCount",
+      "PageTransferSize",
+      "RageClicks",
+      "TotalBrowserCacheHitRatio",
+      "TotalByteCompressionRatio",
+      "TotalCdnCacheHitRatio",
+      "TotalCdnEdgeTime",
+      "TotalCompressionRatio",
+      "TotalDecodedBodySize",
+      "TotalOriginTime",
+      "TotalTransferSize",
+      "XhrBrowserCacheHitRatio",
+      "XhrByteCompressionRatio",
+      "XhrCdnCacheHitRatio",
+      "XhrCdnEdgeTime",
+      "XhrCompressionRatio",
+      "XhrDecodedBodySize",
+      "XhrOriginTime",
+      "XhrRequestCount",
+      "XhrTransferSize"
+    ],
+    "verified_live_extra": [
+      "TotalRequestCount"
+    ],
+    "param_name": "metric (singular, repeated for multiple values), e.g. metric=Beacons&metric=TotalRequestCount; timer=PageLoad&timer=LargestContentfulPaint can be included in the same query."
+  },
+  "metrics_for_metrics_by_dimension__metric_param": {
+    "confidence": "verified_docs + verified_live 2026-10-29",
+    "endpoint": "metrics-by-dimension",
+    "default": "beacons",
+    "casing": "snake_case",
+    "multiple": "Comma-separated list in ONE `metrics` param, e.g. metrics=beacons,largest_contentful_paint (verified live).",
+    "constraints": [
+      "apperror_message/code/source/type dimensions ignore requested metrics and always return AppErrors, AppErrorsPct, ErrorsPerPage (verified_live 2026-10-29).",
+      "page_group, full_url, network_error_code dimensions do NOT support session, session_length, session_duration, bounce_rate (page_group + session_duration -> HTTP 400, verified_live 2026-10-29).",
+      "network_error_code does NOT support errors_per_page (HTTP 400, verified_live 2026-10-29). beacon_type DOES support it, contrary to the docs (verified_live 2026-10-29)."
+    ],
+    "enum": [
+      "beacons",
+      "sessions",
+      "dns",
+      "tcp",
+      "page_load",
+      "asset_cache_hit_rate",
+      "asset_compression_rate",
+      "asset_decoded_body_size",
+      "asset_requests_per_page",
+      "asset_transfer_size",
+      "beacon_browser_cache_hit_rate",
+      "beacon_compression_rate",
+      "beacon_decoded_body_size",
+      "beacon_percentage",
+      "beacon_transfer_size",
+      "bounce_rate",
+      "client_round_trip_time",
+      "css_browser_cache_hit_ratio",
+      "css_decoded_body_size",
+      "css_request_compression_rate",
+      "css_requests_per_page",
+      "css_transfer_size",
+      "cumulative_layout_shift",
+      "dom_complete",
+      "dom_load",
+      "dom_ready",
+      "download",
+      "errors_per_page",
+      "first_byte",
+      "first_contentful_paint",
+      "first_input_delay",
+      "first_last_byte",
+      "first_paint",
+      "font_browser_cache_hit_ratio",
+      "font_request_compression_rate",
+      "font_requests_per_page",
+      "font_transfer_size",
+      "html_browser_cache_hit_ratio",
+      "html_decoded_body_size",
+      "html_request_compression_rate",
+      "html_requests_per_page",
+      "html_transfer_size",
+      "image_browser_cache_hit_ratio",
+      "image_decoded_body_size",
+      "image_request_compression_rate",
+      "image_requests_per_page",
+      "image_transfer_size",
+      "js_decoded_body_size",
+      "js_request_compression_rate",
+      "js_requests_per_page",
+      "js_transfer_size",
+      "largest_contentful_paint",
+      "long_tasks_time",
+      "margin_of_error",
+      "other_browser_cache_hit_ratio",
+      "other_decoded_body_size",
+      "other_request_compression_rate",
+      "other_requests_per_page",
+      "other_transfer_size",
+      "page_browser_cache_hit_rate",
+      "page_decoded_body_size",
+      "page_request_compression_rate",
+      "page_request_per_page",
+      "page_transfer_size",
+      "rage_clicks",
+      "redirect",
+      "service_worker_startup",
+      "session_duration",
+      "session_length",
+      "ssl",
+      "time_to_first_interaction",
+      "time_to_interactive",
+      "time_to_visually_ready",
+      "timer",
+      "total_blocking_time",
+      "unload",
+      "waiting",
+      "xhr_browser_cache_hit_ratio",
+      "xhr_decoded_body_size",
+      "xhr_request_compression_rate",
+      "xhr_requests_per_page",
+      "xhr_transfer_size"
+    ],
+    "param_name": "metrics (PLURAL, comma-separated)",
+    "metric_singular_ignored": "At the upstream API, singular metric is ignored and app-default columns may be returned. The MCP query tool rejects singular metric before HTTP; get_breakdown exposes the correct plural metrics argument.",
+    "supports_percentile": true,
+    "extra_params": {
+      "sortby": "e.g. beacons",
+      "limit": "int 1-100; mPulse default is 10 rows; the MCP query tool sends 100 unless told otherwise; results come pre-sorted"
+    },
+    "response_shape": "{columnNames:[dim, m1, m2, ...], data:[[dimValue, v1, v2], ...]}  (table)"
+  },
+  "timers_for_timer_param": {
+    "confidence": "verified_docs (supersedes cli-mpulse 16-list)",
+    "endpoints": "timers-metrics, summary, histogram, by-minute (and timer-by-* reports)",
+    "default": "PageLoad",
+    "note": "Unrecognized `timer` SILENTLY falls back to PageLoad (no error) - always check response series id == requested name. For custom timers use custom-timer=<name>, or timer=CustomTimer[0-9] by index. Invalid custom-timer DOES 400.",
+    "enum": [
+      "PageLoad",
+      "FirstLastByte",
+      "FirstByte",
+      "RedirectTime",
+      "WaitingTime",
+      "DownloadTime",
+      "UnloadTime",
+      "ServiceWorkerStartup",
+      "DNS",
+      "TCP",
+      "SSL",
+      "DomLoad",
+      "DomReady",
+      "ClientRoundTripTime",
+      "TimeToInteractive",
+      "FirstInputDelay",
+      "TimeToFirstInteraction",
+      "TimeToVisuallyReady",
+      "FirstPaint",
+      "FirstContentfulPaint",
+      "LargestContentfulPaint",
+      "LongTasksTime",
+      "TotalBlockingTime",
+      "CustomTimer[0-9]"
+    ],
+    "param_name": "timer (singular; repeat the key for multiple)"
+  },
+  "dimensions": {
+    "confidence": "verified_docs+verified_live",
+    "drilldown_filter_params": {
+      "note": "Hyphenated. Used to FILTER any report. NOTE the API misspells bandwidth as 'bandwith-block' (missing d, verified live). Custom dimensions filter via custom-dimension-<label>=<value>, e.g. custom-dimension-branch=uk to filter to branch=uk. <label> = the custom dimension name, lowercased with spaces replaced by underscores.",
+      "params": [
+        "page-group",
+        "browser",
+        "browser-family",
+        "ab-test",
+        "country",
+        "region",
+        "device-type",
+        "device-model",
+        "device-manufacturer",
+        "os",
+        "os-family",
+        "connection-type",
+        "isp",
+        "network-error-code",
+        "bandwith-block",
+        "beacon-type",
+        "site-version",
+        "custom-dimension-{label}"
+      ]
+    },
+    "metrics_by_dimension__dimension_split_enum": {
+      "note": "Underscored built-in names for the metrics-by-dimension split. The catalog contains verified names and may not cover future system dimensions. Custom dimensions also use dimension=<label>; app-specific custom labels are declared in mpulse_apps.json. A name missing from both lists is unclassified, not necessarily custom.",
+      "enum": [
+        "page_group",
+        "ab_test",
+        "akamai_aa",
+        "akamai_bm",
+        "akamai_bm_category",
+        "akamai_bm_type",
+        "akamai_feo",
+        "akamai_property_version",
+        "apperror_code",
+        "apperror_message",
+        "apperror_source",
+        "apperror_type",
+        "beacon_type",
+        "boomerang_version",
+        "browser",
+        "bw_block",
+        "connection_type",
+        "country",
+        "device",
+        "device_manufacturer",
+        "device_type",
+        "early_beacon",
+        "full_url",
+        "http_protocol",
+        "ip_version",
+        "isp",
+        "landing_page",
+        "navigation_type",
+        "network_error_code",
+        "operating_system",
+        "operating_system_with_version",
+        "site_version",
+        "visibility_state",
+        "device_memory",
+        "page_domain",
+        "page_cdn_cache_status",
+        "bfcache_navigation",
+        "bfcache_not_restored_reason"
+      ],
+      "custom_dimension_allowed": true,
+      "verification": {
+        "date": "2026-11-17",
+        "method": "Read-only Query API checks confirmed the five 2024 system dimensions on this endpoint.",
+        "source": "https://techdocs.akamai.com/mpulse/changelog/feb-28-2024-new-metrics-and-dimensions"
+      }
+    },
+    "dimension_values__dimension_enum": {
+      "note": "underscored. Valid `dimension` values for the dimension-values query. connection_type is NOT here -> that's why dimension-values with connection-type 400s. (The MCP accepts hyphenated aliases like beacon-type/device-type and maps them.) CUSTOM DIMENSIONS ARE NOT ALLOWED here (built-in only); use metrics-by-dimension to break down by a custom dimension.",
+      "enum": [
+        "page_group",
+        "ab_test",
+        "akamai_aa",
+        "akamai_bm_category",
+        "akamai_bm_type",
+        "akamai_bm",
+        "akamai_feo",
+        "akamai_property_version",
+        "beacon_type",
+        "boomerang_version",
+        "browser_family",
+        "browser",
+        "bw_block",
+        "country",
+        "device_type",
+        "early_beacon",
+        "http_protocol",
+        "ip_version",
+        "landing_page",
+        "navigation_type",
+        "os_family",
+        "os",
+        "url",
+        "visibility_state",
+        "device_memory",
+        "page_domain",
+        "page_cdn_cache_status",
+        "bfcache_navigation",
+        "bfcache_not_restored_reason"
+      ],
+      "custom_dimension_allowed": false,
+      "verification": {
+        "date": "2026-11-17",
+        "method": "Read-only Query API checks confirmed the five 2024 system dimensions on this endpoint.",
+        "source": "https://techdocs.akamai.com/mpulse/changelog/feb-28-2024-new-metrics-and-dimensions"
+      }
+    },
+    "enumerated_values": {
+      "beacon-type": {
+        "confidence": "verified_docs+live",
+        "values": [
+          "page view",
+          "manual",
+          "xhr",
+          "spa_hard",
+          "spa",
+          "api_custom_timer",
+          "api_custom_metric",
+          "error",
+          "amp"
+        ],
+        "note": "'page view' has a space. Live data for app-a currently shows only 'page view' and 'xhr'."
+      },
+      "device-type": {
+        "confidence": "verified_docs+live",
+        "values": [
+          "Mobile",
+          "Desktop",
+          "Tablet"
+        ],
+        "live_extra": [
+          "(No Value)"
+        ]
+      },
+      "bandwith-block": {
+        "confidence": "verified_docs+verified_live",
+        "values": [
+          "0",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          ".NONE"
+        ],
+        "meaning": {
+          "0": "<64Kbps",
+          "1": "64-512Kbps",
+          "2": "512Kbps-2Mbps",
+          "3": "2-6Mbps",
+          "4": "6-10Mbps",
+          "5": "10-100Mbps",
+          "6": "100-1000Mbps",
+          ".NONE": "no bandwidth calculated"
+        }
+      }
+    },
+    "do_not_cache_enumerate_on_demand": [
+      "os",
+      "os-family",
+      "browser",
+      "browser-family",
+      "page-group",
+      "country",
+      "region",
+      "device-model",
+      "device-manufacturer",
+      "isp",
+      "ab-test",
+      "site-version",
+      "landing_page",
+      "full_url"
+    ],
+    "dimension_over_time__dimension_enum": {
+      "note": "underscored. Valid `dimension` for dimension-over-time (built-in only; custom NOT allowed).",
+      "custom_dimension_allowed": false,
+      "enum": [
+        "ab_test",
+        "akamai_aa",
+        "akamai_bm_category",
+        "akamai_bm_type",
+        "akamai_bm",
+        "akamai_feo",
+        "akamai_property_version",
+        "bandwidth_block",
+        "boomerang_version",
+        "browser_version",
+        "browser",
+        "country",
+        "device_manufacturer",
+        "device_type",
+        "device",
+        "early_beacon",
+        "full_url",
+        "http_protocol",
+        "ip_version",
+        "isp",
+        "landing_page",
+        "navigation_type",
+        "network_error_code",
+        "operating_system_version",
+        "operating_system",
+        "page_group",
+        "site_version",
+        "url",
+        "visibility_state",
+        "device_memory",
+        "page_domain",
+        "page_cdn_cache_status",
+        "bfcache_navigation",
+        "bfcache_not_restored_reason"
+      ],
+      "verification": {
+        "date": "2026-11-17",
+        "method": "Read-only Query API checks confirmed the five 2024 system dimensions on this endpoint.",
+        "source": "https://techdocs.akamai.com/mpulse/changelog/feb-28-2024-new-metrics-and-dimensions"
+      }
+    }
+  },
+  "common_params": {
+    "confidence": "verified_docs",
+    "percentile": {
+      "range": "1-99",
+      "default": 50,
+      "note": "one value per query; p50 & p75 need two calls"
+    },
+    "format": {
+      "values": [
+        "legacy",
+        "json"
+      ],
+      "default": "legacy",
+      "note": "legacy is deprecated; prefer json",
+      "param_name": "format"
+    },
+    "timezone": {
+      "default": "UTC",
+      "note": "Java-parseable names e.g. US/Eastern, Europe/London, Asia/Shanghai"
+    },
+    "date": {
+      "format": "YYYY-MM-DD",
+      "note": "The API date parameter selects one calendar day. Without date/date-comparator the API defaults to Today; get_summary/get_histogram/get_timers/get_metrics require an explicit date or date_comparator. get_breakdown/query may use the API default."
+    },
+    "date_comparator": {
+      "docs_enum": [
+        "Last30Minutes",
+        "LastHour",
+        "Last3Hours",
+        "Last12Hours",
+        "Last24Hours",
+        "Today",
+        "ThisWeek",
+        "ThisMonth",
+        "Last",
+        "Between"
+      ],
+      "note": "Between needs date-start & date-end (date-end exclusive); Last needs trailing-seconds. ThisWeek = 00:00 seven days ago until now; ThisMonth = 00:00 on the same day last month until now (verified_live 2026-10-29). Neither is a calendar week or month. No date at all = Today. Unsupported values return HTTP 500 and are rejected by the server up front (verified_live 2026-10-29).",
+      "invalid_returns_http_500": [
+        "Yesterday",
+        "Last7Days",
+        "Last6Hours",
+        "any other unknown value"
+      ]
+    },
+    "date_start_end": {
+      "note": "For Between. Docs: date-end must be GREATER than date-start. Live behavior: date-end is EXCLUSIVE (June = start 2026-06-01, end 2026-07-01). Multi-day ranges auto-coarsen buckets (~2d hourly, ~30d daily)."
+    },
+    "time_selection": {
+      "parameters": [
+        "date",
+        "date-comparator",
+        "trailing-seconds",
+        "date-start",
+        "date-end",
+        "timezone"
+      ]
+    }
+  },
+  "behavioral_gotchas": {
+    "confidence": "verified_live",
+    "items": [
+      {
+        "text": "Invalid `timer` or `metric` name -> silent fallback to PageLoad (no error). Validate response series id == requested name.",
+        "applies_to": [
+          "summary",
+          "histogram",
+          "by-minute",
+          "timers-metrics",
+          "dimension-over-time",
+          "geography",
+          "page-groups",
+          "browsers",
+          "ab-tests",
+          "bandwidth"
+        ]
+      },
+      {
+        "text": "Invalid `custom-timer` -> HTTP 400 'Invalid Parameter'. (Different from timer/metric.)",
+        "applies_to": [
+          "summary",
+          "histogram",
+          "by-minute",
+          "timers-metrics",
+          "dimension-over-time",
+          "geography",
+          "page-groups",
+          "browsers",
+          "ab-tests",
+          "bandwidth"
+        ]
+      },
+      {
+        "text": "timers-metrics: pass a JSON LIST for multiple `metric`/`timer` values; the client expands it to repeated keys (verified_live 2026-10-29). The default PageLoad timer series comes back alongside requested metrics.",
+        "applies_to": [
+          "timers-metrics"
+        ]
+      },
+      {
+        "text": "timers-metrics `latest` = aggregate over the WHOLE selected period (e.g. Beacons daily latest == total n; percentile metric latest == period-wide percentile). history[] is the per-bucket series. For a monthly p75/p50 read `latest`, do not average daily history.",
+        "applies_to": [
+          "timers-metrics"
+        ]
+      },
+      {
+        "text": "date-end is EXCLUSIVE for Between despite docs saying 'greater than'.",
+        "applies_to": "all"
+      },
+      {
+        "text": "dimension naming differs by context: FILTER params are hyphenated (beacon-type); the split `dimension` value is underscored (beacon_type).",
+        "applies_to": [
+          "metrics-by-dimension",
+          "dimension-values",
+          "dimension-over-time",
+          "app-error-summary"
+        ]
+      },
+      {
+        "text": "Param misspelling is REAL (verified live): the bandwidth filter param is `bandwith-block` (missing 'd'); `bandwidth-block` does not work.",
+        "applies_to": "all"
+      },
+      {
+        "text": "Custom dimensions: filter with custom-dimension-<label>=<value> on endpoints supporting filters; split with metrics-by-dimension dimension=<custom_name>. Declare labels in mpulse_apps.json and inspect list_custom_dimensions. The MCP server does not discover custom labels automatically.",
+        "applies_to": "all"
+      },
+      {
+        "text": "metrics-by-dimension: use metrics (PLURAL, comma-separated). Upstream ignores singular metric; the MCP query tool rejects it before HTTP. get_breakdown exposes a metrics list and joins it correctly.",
+        "applies_to": [
+          "metrics-by-dimension"
+        ]
+      },
+      {
+        "text": "metrics-by-dimension computes percentiles (timer p75 by dimension matches timers-metrics). Mixing count metrics (beacons) with percentile metrics in one call works (verified_live 2026-10-29).",
+        "applies_to": [
+          "metrics-by-dimension"
+        ]
+      },
+      {
+        "text": "Multiple metric/timer values are repeat-key only on timers-metrics; supported filters and custom-dimension-* filters also use repeated keys. Pass JSON lists through query, get_metrics, or the supported dedicated filter arguments. get_breakdown joins its metrics list into the plural comma-separated metrics parameter. Single-value timer/metric endpoints do not accept lists.",
+        "applies_to": "all"
+      },
+      {
+        "text": "metric-per-page-load-time uses a single `metric` with a distinct enum (BounceRate + CustomMetric0-9).",
+        "applies_to": [
+          "metric-per-page-load-time"
+        ]
+      },
+      {
+        "text": "metrics-by-dimension, app-error-summary and dimension-over-time return only mPulse's default top 10 rows without a native `limit`. The MCP query tool sends its top-level `limit` (default 100, or 10 for dimension-over-time) and sets truncated.by == 'server' when the result fills it. Contrary to the docs, `limit` works for country/page_group/browser (verified live).",
+        "applies_to": [
+          "metrics-by-dimension",
+          "app-error-summary",
+          "dimension-over-time"
+        ]
+      },
+      {
+        "text": "Unsupported date-comparator values (Yesterday, Last7Days, Last6Hours, …) return HTTP 500, not 400. Use date=YYYY-MM-DD for yesterday and Between for a range.",
+        "applies_to": "all"
+      },
+      {
+        "text": "Chart-style endpoints (by-minute, histogram, bandwidth, sessions-per-page-load-time, dimension-over-time) default to series-format=js, a JavaScript-literal string. The server forces series-format=json.",
+        "applies_to": [
+          "by-minute",
+          "histogram",
+          "bandwidth",
+          "sessions-per-page-load-time",
+          "dimension-over-time"
+        ]
+      },
+      {
+        "text": "dimension-over-time: without an explicit interval, the API selects resolution based on the period. Use interval when resolution matters; history_mode reduces returned points after the API response is received.",
+        "applies_to": [
+          "dimension-over-time"
+        ]
+      },
+      {
+        "text": "metrics-by-dimension with an apperror_* dimension ignores the requested metrics and always returns AppErrors, AppErrorsPct and ErrorsPerPage.",
+        "applies_to": [
+          "metrics-by-dimension"
+        ]
+      },
+      {
+        "text": "ThisWeek and ThisMonth are trailing windows, not calendar periods: ThisWeek starts at 00:00 seven days ago and ThisMonth at 00:00 on the same day last month, both ending now, in the request timezone (verified live). For a calendar month use Between with date_start=YYYY-MM-01 and date_end=the first day of the next month. Results include period.resolved with the exact range.",
+        "applies_to": "all"
+      },
+      {
+        "text": "metrics-by-dimension `metrics` values ARE validated by mPulse: an invalid name returns HTTP 400 'Invalid metric' (verified live 2026-11-02) — no silent fallback, unlike timer/metric on the timers-metrics family. Matching is case/underscore-insensitive (Image_Transfer_Size works).",
+        "applies_to": [
+          "metrics-by-dimension"
+        ]
+      }
+    ],
+    "_note": "applies_to lists the query-types a gotcha concerns ('all' = every query-type); describe_query shows only the matching ones unless verbose=True."
+  },
+  "api_rate_limits": {
+    "confidence": "Reference values; upstream quotas have not been reverified in this implementation review.",
+    "concurrent": 3,
+    "per_minute": 100,
+    "per_hour": 10000,
+    "per_day": 50000,
+    "source": "https://techdocs.akamai.com/mpulse/reference/queries",
+    "runtime_note": "client.py currently applies concurrency=3 and per-minute=100 locally per client process. Hour/day values here are advisory; they do not configure the limiter and are not separately enforced."
+  },
+  "drilldown_combination_rule": {
+    "confidence": "verified_docs",
+    "supported_example": "page-group + browser + ab-test",
+    "rule": "Unsupported dimension combos return EMPTY data, not an error -> empty may mean 'combo unsupported', not 'no traffic'."
+  },
+  "worked_example": {
+    "confidence": "verified_live",
+    "goal": "app-a monthly p75 asset requests/page, page-view beacons, June 2026",
+    "query_type": "timers-metrics",
+    "params": {
+      "beacon-type": "page view",
+      "date-comparator": "Between",
+      "date-start": "2026-06-01",
+      "date-end": "2026-07-01",
+      "metric": "TotalRequestCount",
+      "percentile": 75
+    },
+    "read": "response series where id=='TotalRequestCount' -> latest (the period p75 value)"
+  },
+  "custom_dimensions": {
+    "confidence": "user_provided (app owner)",
+    "filter_usage": "custom-dimension-<label>=<value>  e.g. custom-dimension-branch=uk",
+    "split_usage": "metrics-by-dimension dimension=<custom_name>  e.g. dimension=branch (metric broken down by 'branch')",
+    "label_rule": "<label> is the custom dimension name lowercased, spaces -> underscores. Use .NONE to match beacons with no value.",
+    "enumeration": "Custom labels are declared per app in mpulse_apps.json and exposed through list_custom_dimensions and describe_query(app=...). This implementation does not discover them automatically from mPulse. Built-in dimension enums do not include custom labels; an undeclared custom label may pass through with an advisory."
+  },
+  "custom_dimension_support": {
+    "confidence": "user_provided (app owner) + verified_live 2026-10-29: dimension-values/dimension-over-time with a custom name -> HTTP 400",
+    "by_query_type": {
+      "metrics-by-dimension": true,
+      "dimension-values": false,
+      "dimension-over-time": false
+    },
+    "note": "Among dimension split endpoints, custom labels are accepted by metrics-by-dimension only; dimension-values and dimension-over-time accept built-in split dimensions. Custom-dimension filters are a separate capability on endpoints supporting drilldowns. Dedicated tools expose custom_dimension_filters with scalar or list values.",
+    "redirect": "metrics-by-dimension"
+  },
+  "metrics_for_metric_per_page_load_time__metric_param": {
+    "confidence": "verified_docs + verified_live 2026-10-29",
+    "endpoint": "metric-per-page-load-time",
+    "param_name": "metric (single value only)",
+    "default": "BounceRate",
+    "casing": "CamelCase",
+    "enum": [
+      "BounceRate",
+      "CustomMetric0",
+      "CustomMetric1",
+      "CustomMetric2",
+      "CustomMetric3",
+      "CustomMetric4",
+      "CustomMetric5",
+      "CustomMetric6",
+      "CustomMetric7",
+      "CustomMetric8",
+      "CustomMetric9"
+    ],
+    "note": "Completely different metric name space from the other endpoints; only one metric per call."
+  },
+  "parameter_mechanics": {
+    "confidence": "verified_docs+verified_live 2026-08-10",
+    "comma_separated_in_one_param": {
+      "metrics-by-dimension": [
+        "metrics"
+      ]
+    },
+    "multiple_via_repeated_key": [
+      "metric (timers-metrics)",
+      "timer (timers-metrics)",
+      "ab-test",
+      "bandwith-block",
+      "beacon-type",
+      "browser",
+      "browser-family",
+      "connection-type",
+      "country",
+      "device-manufacturer",
+      "device-model",
+      "device-type",
+      "isp",
+      "network-error-code",
+      "os",
+      "os-family",
+      "page-group",
+      "region",
+      "site-version",
+      "custom-dimension-{label}"
+    ],
+    "single_value_only": [
+      "dimension (all endpoints)",
+      "timer (summary/histogram/by-minute/report endpoints)",
+      "custom-timer",
+      "percentile",
+      "format",
+      "date",
+      "date-comparator",
+      "timezone",
+      "limit",
+      "sortby",
+      "interval"
+    ],
+    "how_to_pass": "For timers-metrics, get_metrics accepts a string or JSON list for metric and timer; query accepts lists under params. Supported dedicated filters and custom_dimension_filters also accept strings or lists. The client expands lists to repeated query keys. get_breakdown accepts a metrics list and joins it with commas; generic query uses a comma-joined metrics string (a string list is also joined by its preparer). Single-value endpoint parameters take scalars.",
+    "defaults": {
+      "date-comparator": "Today",
+      "format": "legacy (deprecated; server forces json)",
+      "timezone": "UTC",
+      "percentile": 50
+    },
+    "comma_also_accepted_for_filters": "country=KR,JP returns the same as repeated country keys (verified_live 2026-10-29); other filters untested."
+  },
+  "endpoint_params": {
+    "_confidence": "verified_docs + verified_live 2026-10-29 (every query-type)",
+    "_note": "Per-endpoint special params beyond the shared date/timezone/drilldown-filter set. 'filters' = the standard drilldown filter params apply (repeat-key).",
+    "summary": {
+      "value_params": {
+        "timer": "single, default PageLoad",
+        "custom-timer": "single",
+        "percentile": "1-99, default 50"
+      },
+      "special_params": {},
+      "filters": true,
+      "summary": "Aggregate stats for a timer: median, margin of error, count, p95/p98.",
+      "supports_time": true,
+      "aggregation": "single-value (period aggregate)",
+      "response_shape": "{median, moe, n, p95, p98}",
+      "notes": ""
+    },
+    "histogram": {
+      "value_params": {
+        "timer": "single, default PageLoad",
+        "custom-timer": "single",
+        "percentile": "1-99, default 50"
+      },
+      "special_params": {
+        "series-format": "js|json, default js (a JS-literal string); the server always sends json"
+      },
+      "filters": true,
+      "summary": "Distribution (buckets) for a timer over the period.",
+      "supports_time": true,
+      "aggregation": "per-bucket distribution",
+      "response_shape": "{chartTitle, datasetName, series:{series:[{name, aPoints:[{s,e,c}], buckets, median, p95, p98, kValue}]}}",
+      "notes": ""
+    },
+    "by-minute": {
+      "value_params": {
+        "timer": "single, default PageLoad",
+        "custom-timer": "single",
+        "percentile": "1-99, default 50"
+      },
+      "special_params": {
+        "series-format": "js|json, default js (a JS-literal string); the server always sends json"
+      },
+      "filters": true,
+      "summary": "A single timer's value by minute over time (time series).",
+      "supports_time": true,
+      "aggregation": "per-minute",
+      "response_shape": "{chartTitle, series:{series:[{name, aPoints:[{x,y,label,userdata}], pointCount, statistics:{yMin,yMax,ySum,yAvg}}]}}",
+      "notes": "Use for one timer. For multiple timers/metrics use 'timers-metrics'."
+    },
+    "timers-metrics": {
+      "value_params": {
+        "metric": "repeat-key, default Beacons",
+        "timer": "repeat-key, default PageLoad",
+        "custom-timer": "single",
+        "percentile": "1-99, default 50"
+      },
+      "special_params": {},
+      "filters": true,
+      "notes": "metric defaults to 'Beacons', timer to 'PageLoad'. Multiple metrics/timers via REPEATED keys (pass a JSON list).",
+      "summary": "Values for multiple timers or metrics by minute over time.",
+      "supports_time": true,
+      "aggregation": "period aggregate in latest; history is a time series",
+      "response_shape": "{dataTimeZone, values:[{id, history:[int], latest:int}]}"
+    },
+    "dimension-values": {
+      "value_params": {
+        "dimension": "single, built-in only"
+      },
+      "special_params": {},
+      "filters": false,
+      "notes": "Drilldown filters are ignored, and custom or unknown dimensions return HTTP 400 (verified_live 2026-10-29).",
+      "summary": "All observed values for a given dimension.",
+      "supports_time": true,
+      "aggregation": "distinct values observed over the period",
+      "response_shape": ""
+    },
+    "dimension-over-time": {
+      "value_params": {
+        "dimension": "single, built-in only (own enum)",
+        "timer": "single, default PageLoad",
+        "custom-timer": "single",
+        "percentile": "1-99, default 50",
+        "metric": "single"
+      },
+      "special_params": {
+        "limit": "1-10, default 10. mPulse rejects >10 upstream (recorded live 2026-10-29), but the MCP query tool lowers over-max requested values to 10 with a correction note before HTTP. Values below 1 or values that cannot be converted to an integer are rejected.",
+        "interval": [
+          "1_min",
+          "5_min",
+          "15_min",
+          "30_min",
+          "1_hour",
+          "2_hour",
+          "4_hour",
+          "6_hour",
+          "8_hour",
+          "12_hour",
+          "1_day",
+          "7_day"
+        ],
+        "series-format": "js|json, default js (a JS-literal string); the server always sends json"
+      },
+      "filters": true,
+      "notes": "Without `interval`, mPulse selects an interval based on the period; set an explicit interval when resolution matters. Custom dimensions and dimension-values-only names (e.g. bw_block) return HTTP 400; use bandwidth_block, browser_version etc. (verified_live 2026-10-29). Response: {labelNames, data:{series:[{name, aPoints}]}}.",
+      "summary": "Top dimension values across time.",
+      "supports_time": true,
+      "aggregation": "per-interval time series per dimension value",
+      "response_shape": ""
+    },
+    "metrics-by-dimension": {
+      "value_params": {
+        "metrics": "PLURAL, comma-separated, default beacons",
+        "dimension": "single",
+        "percentile": "1-99, default 50",
+        "custom-timer": "single"
+      },
+      "special_params": {
+        "limit": "1-100. mPulse returns only the top 10 rows when limit is omitted, so the MCP query tool always sends one (its top-level `limit`, default 100). The docs say limit is not valid for page_group/browser/country/bw_block/ab_test, but live (2026-10-29) it IS honored for page_group, browser and country; bw_block and ab_test are unverified.",
+        "sortby": "e.g. beacons; results come pre-sorted"
+      },
+      "filters": true,
+      "constraints": [
+        "apperror_message/code/source/type dimensions ignore requested metrics and always return AppErrors, AppErrorsPct, ErrorsPerPage (verified_live 2026-10-29).",
+        "page_group, full_url, network_error_code dimensions do NOT support session, session_length, session_duration, bounce_rate (page_group + session_duration -> HTTP 400, verified_live 2026-10-29).",
+        "network_error_code does NOT support errors_per_page (HTTP 400, verified_live 2026-10-29). beacon_type DOES support it, contrary to the docs (verified_live 2026-10-29)."
+      ],
+      "response_shape": "{columnNames:[...], data:[[...]]} table",
+      "summary": "Metric values broken down by a dimension.",
+      "supports_time": true,
+      "aggregation": "period aggregate per dimension value",
+      "notes": ""
+    },
+    "metric-per-page-load-time": {
+      "value_params": {
+        "metric": "single, default BounceRate (own enum: BounceRate + CustomMetric0-9)"
+      },
+      "special_params": {},
+      "filters": true,
+      "notes": "Default metric is BounceRate; other names (e.g. Beacons) return HTTP 400 (verified_live 2026-10-29).",
+      "summary": "A metric segmented by page-load-time ranges.",
+      "supports_time": true,
+      "aggregation": "period aggregate per page-load-time bucket",
+      "response_shape": ""
+    },
+    "sessions-per-page-load-time": {
+      "value_params": {},
+      "special_params": {
+        "series-format": "js|json, default js (a JS-literal string); the server always sends json"
+      },
+      "filters": true,
+      "notes": "No metric, no percentile, no limit.",
+      "summary": "Session counts segmented by page-load-time ranges.",
+      "supports_time": true,
+      "aggregation": "period aggregate per page-load-time bucket",
+      "response_shape": ""
+    },
+    "app-error-summary": {
+      "value_params": {
+        "dimension": "single, default apperror_message; enum apperror_message/apperror_code/apperror_source/apperror_type"
+      },
+      "special_params": {
+        "limit": "1-100, mPulse default 10 (verified_live 2026-10-29). The MCP query tool sends its top-level `limit` (default 100)."
+      },
+      "filters": true,
+      "summary": "Aggregated application errors (messages, codes, sources, types).",
+      "supports_time": true,
+      "aggregation": "period aggregate per error",
+      "response_shape": "",
+      "notes": ""
+    },
+    "page-groups": {
+      "value_params": {
+        "timer": "single, default PageLoad",
+        "custom-timer": "single",
+        "percentile": "1-99, default 50"
+      },
+      "special_params": {},
+      "filters": true,
+      "notes": "Native `limit` is ignored (verified_live 2026-10-29); use the MCP client-side `limit` (default cap 100). `percentile` is honored (verified_live 2026-10-29).",
+      "summary": "Beacon counts per page group.",
+      "supports_time": true,
+      "aggregation": "period aggregate per page group",
+      "response_shape": ""
+    },
+    "browsers": {
+      "value_params": {
+        "timer": "single, default PageLoad",
+        "custom-timer": "single",
+        "percentile": "1-99, default 50"
+      },
+      "special_params": {},
+      "filters": true,
+      "notes": "Native `limit` is ignored (verified_live 2026-10-29); use the MCP client-side `limit` (default cap 100). Returns ~1,800 rows for a day.",
+      "summary": "Beacon counts per browser.",
+      "supports_time": true,
+      "aggregation": "period aggregate per browser",
+      "response_shape": ""
+    },
+    "ab-tests": {
+      "value_params": {
+        "timer": "single, default PageLoad",
+        "custom-timer": "single",
+        "percentile": "1-99, default 50"
+      },
+      "special_params": {},
+      "filters": true,
+      "notes": "Native `limit` is ignored (verified_live 2026-10-29); use the MCP client-side `limit` (default cap 100).",
+      "summary": "Beacon counts per A/B test.",
+      "supports_time": true,
+      "aggregation": "period aggregate per A/B test",
+      "response_shape": ""
+    },
+    "bandwidth": {
+      "value_params": {
+        "timer": "single, default PageLoad",
+        "custom-timer": "single"
+      },
+      "special_params": {
+        "series-format": "js|json, default js (a JS-literal string); the server always sends json"
+      },
+      "filters": true,
+      "notes": "`percentile` and native `limit` are ignored (verified_live 2026-10-29).",
+      "summary": "Beacon counts per bandwidth block.",
+      "supports_time": true,
+      "aggregation": "period aggregate per bandwidth block",
+      "response_shape": ""
+    },
+    "geography": {
+      "value_params": {
+        "metric": "single, default Beacons",
+        "timer": "single, default PageLoad",
+        "custom-timer": "single",
+        "percentile": "1-99, default 50"
+      },
+      "special_params": {},
+      "filters": true,
+      "notes": "Native `limit` is ignored (verified_live 2026-10-29); use the MCP client-side `limit` (default cap 100).",
+      "summary": "Beacon counts per country/geography.",
+      "supports_time": true,
+      "aggregation": "period aggregate per country",
+      "response_shape": ""
+    }
+  }
+}
